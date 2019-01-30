@@ -1,0 +1,91 @@
+Sub inhibit_info_copy_paste()
+
+Dim wbk As Workbook
+Dim wbk1 As Workbook
+Dim Func_name As String
+Dim Filename As String
+Dim Path As String
+Dim dfc_name As String
+Dim dfc_name_in_file As String
+Dim Func_name_len As Integer
+Dim i As Integer
+Dim j As Integer
+Dim k As Integer
+Dim startrow As Integer
+Dim lastrow As Integer
+
+i = 2
+j = 1
+
+Sheet2.Activate
+Range("C2:C2500").Find("End").Activate
+lastvalrow = ActiveCell.Row
+
+For i = 2 To lastvalrow - 1
+
+Sheet2.Activate
+
+Func_name = Cells(i, j + 1)
+
+dfc_name = Cells(i, j)
+
+i = i + 6
+
+Func_name_len = Len(Func_name)
+
+'To read the path from cell A10
+With ThisWorkbook
+   Path = Sheets("Sheet1").Range("A10").Value
+End With
+
+
+Filename = Dir(Path & "*.xlsx")
+
+
+Do While Len(Filename) > 0
+  
+'get the name of the file
+
+Func_name_from_file = Left(Filename, Func_name_len)
+
+k = 1
+
+   If Func_name = Func_name_from_file Then
+  'open the excel file
+   With Sheets("Sheet2")
+       .Range(.Cells(i - 6, 3), .Cells(i - 5, 3)).Copy
+   End With
+   Set wbk = Workbooks.Open(Path & Filename)
+   wbk.Activate
+   For k = 1 To 10000
+       If Cells(k, 5) = dfc_name Then
+          startrow = k
+          lastrow = k + 1000
+          Let copyrange = "B" & startrow & ":" & "AA" & lastrow
+          Range(copyrange).Find("Master SAE-Codes:*").Select
+          ActiveSheet.Paste
+          wbk.Save
+          wbk.Close
+          'Else
+          'MsgBox "Please enter Master SAE-PCodes in the ST for: " & dfc_name
+          'Exit Sub
+          
+       End If
+   Next k
+   'wbk.Close True
+   'Else
+   'MsgBox "Couldn't find the function in the folder : " & Func_name
+   'Exit Sub
+   End If
+
+Filename = Dir
+
+Loop
+
+Next i
+
+
+MsgBox "Completed"
+
+
+End Sub
